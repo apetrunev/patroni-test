@@ -1,0 +1,16 @@
+services:
+  pg-patroni-2004:
+    container_name: pg_patroni-2004
+    build:
+      context: ./
+      args:
+        - base_image=ubuntu:20.04
+    command: /bin/sh -c 'while true; do echo "Test and sleep"; sleep 2; done'
+
+  pg-patroni-2204:
+    container_name: pg_patroni-2204
+    build:
+      context: ./
+      args:
+        - base_image=ubuntu:22.04
+    command: /bin/sh -c 'while true; do echo "Test and sleep"; sleep 2; done'
