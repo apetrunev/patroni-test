@@ -9,7 +9,6 @@ services:
       - 5433:5432
     volumes:
       - pg-patroni-2004:/var/lib/postgresql
-    command: /bin/sh -c 'while true; do echo "Test and sleep"; sleep 2; done'
 
   pg-patroni-2204:
     container_name: pg-patroni-2204
@@ -21,6 +20,7 @@ services:
       - 5434:5432
     volumes:
       - pg-patroni-2204:/var/lib/postgresql
+    entrypoint: []
     command: /bin/sh -c 'while true; do echo "Test and sleep"; sleep 2; done'
 
   etcd:

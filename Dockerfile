@@ -11,7 +11,7 @@ RUN export DEBIAN_FRONTEND=noninteractive; \
     echo 'tzdata tzdata/Areas select Etc' | debconf-set-selections; \
     echo 'tzdata tzdata/Zones/Etc select UTC' | debconf-set-selections \
     && apt-get update \
-    && apt-get install -y curl wget ca-certificates make lsb-release tzdata vim git sudo \
+    && apt-get install -y curl wget ca-certificates make lsb-release tzdata man-db vim git sudo \
     && install -d /usr/share/postgresql-common/pgdg \
     && curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc \
     && sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
@@ -24,8 +24,10 @@ RUN export DEBIAN_FRONTEND=noninteractive; \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN echo "\nexport PATH=$PATH:/usr/lib/postgresql/14/bin" >> /etc/profile; \
-    wget ${patroni_url} -O /tmp/patroni.tar.gz \
-    && mkdir -vp /tmp/patroni-src \
-    && tar -C /tmp/patroni-src --strip-components=1 -xvzf /tmp/patroni.tar.gz \
-    && cp -v /tmp/patroni-src/postgres0.yml /var/lib/postgresql/patroni.yaml && chown -v postgres:postgres /var/lib/postgresql/patroni.yaml
+RUN echo "\nexport PATH=$PATH:/usr/lib/postgresql/14/bin" >> /etc/profile
+RUN mkdir -vp /patroni && chown -vR postgres:postgres /patroni
+COPY patroni.yaml entrypoint.sh /patroni/
+WORKDIR /var/lib/postgresql
+USER postgres
+ENV PATH="$PATH:/usr/lib/postgresql/14/bin"
+ENTRYPOINT /patroni/entrypoint.sh
