@@ -1,16 +1,47 @@
 services:
   pg-patroni-2004:
-    container_name: pg_patroni-2004
+    container_name: pg-patroni-2004
     build:
       context: ./
       args:
         - base_image=ubuntu:20.04
+    ports:
+      - 5433:5432
+    volumes:
+      - pg-patroni-2004:/var/lib/postgresql
     command: /bin/sh -c 'while true; do echo "Test and sleep"; sleep 2; done'
 
   pg-patroni-2204:
-    container_name: pg_patroni-2204
+    container_name: pg-patroni-2204
     build:
       context: ./
       args:
         - base_image=ubuntu:22.04
+    ports:
+      - 5434:5432
+    volumes:
+      - pg-patroni-2204:/var/lib/postgresql
     command: /bin/sh -c 'while true; do echo "Test and sleep"; sleep 2; done'
+
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.18
+    container_name: node1
+    ports:
+      - 2379:2379
+      - 2380:2380
+    volumes:
+      - etcd-data:/etcd-data
+    command: ["/usr/local/bin/etcd",
+              "--enable-v2=true",
+              "--data-dir=/etcd-data",
+              "--name", "node1",
+              "--initial-advertise-peer-urls", "http://${NODE1}:2380",
+              "--listen-peer-urls", "http://0.0.0.0:2380",
+              "--advertise-client-urls", "http://${NODE1}:2379",
+              "--listen-client-urls", "http://0.0.0.0:2379",
+              "--initial-cluster", "node1=http://${NODE1}:2380"]
+
+volumes:
+  pg-patroni-2004:
+  pg-patroni-2204:
+  etcd-data:
