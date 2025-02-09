@@ -5,6 +5,8 @@ ARG base_image="ubuntu:22.04"
 
 FROM ${base_image}
 
+ARG patroni_url="https://github.com/patroni/patroni/archive/refs/tags/v2.1.2.tar.gz"
+
 RUN export DEBIAN_FRONTEND=noninteractive; \
     echo 'tzdata tzdata/Areas select Etc' | debconf-set-selections; \
     echo 'tzdata tzdata/Zones/Etc select UTC' | debconf-set-selections \
@@ -22,5 +24,8 @@ RUN export DEBIAN_FRONTEND=noninteractive; \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN echo "\nexport PATH=$PATH:/usr/lib/postgresql/14/bin" >> /etc/profile
-
+RUN echo "\nexport PATH=$PATH:/usr/lib/postgresql/14/bin" >> /etc/profile; \
+    wget ${patroni_url} -O /tmp/patroni.tar.gz \
+    && mkdir -vp /tmp/patroni-src \
+    && tar -C /tmp/patroni-src --strip-components=1 -xvzf /tmp/patroni.tar.gz \
+    && cp -v /tmp/patroni-src/postgres0.yml /var/lib/postgresql/patroni.yaml && chown -v postgres:postgres /var/lib/postgresql/patroni.yaml
