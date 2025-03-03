@@ -20,6 +20,7 @@ RUN export DEBIAN_FRONTEND=noninteractive; \
     && sed -i -E 's/^#create_main_cluster[[:space:]]+=[[:space:]]+.*$/create_main_cluster = false/g' /etc/postgresql-common/createcluster.conf \
     && apt-get install -y postgresql-14 pgbouncer postgresql-client-common postgresql-client-14 postgresql-client \
     && apt-get install -y python3-psycopg2 python3-pip \
+    && apt-get install supervisor \
     && pip3 install cdiff patroni[psycopg3,etcd,etcd3,consul]==2.1.2 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -27,7 +28,10 @@ RUN export DEBIAN_FRONTEND=noninteractive; \
 RUN echo "\nexport PATH=$PATH:/usr/lib/postgresql/14/bin" >> /etc/profile
 RUN mkdir -vp /patroni && chown -vR postgres:postgres /patroni
 COPY patroni.yaml entrypoint.sh /patroni/
+COPY patroni.yaml /var/lib/postgresql
+COPY supervisord.conf /etc/supervisor/
+COPY patroni.conf /etc/supervisor/conf.d/
 WORKDIR /var/lib/postgresql
 USER postgres
 ENV PATH="$PATH:/usr/lib/postgresql/14/bin"
-ENTRYPOINT /patroni/entrypoint.sh
+ENTRYPOINT ["supervisord"]
